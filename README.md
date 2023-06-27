@@ -2,6 +2,10 @@
 
 Simple script to download model files on HuggingFace. The only dependencies are curl/awk.
 
+## Background
+
+Downloading models from Huggingface can be frustrating. Git clone relies on `git-lfs` and takes up more storage space after completion (due to git commit history). Models downloaded using the transformers API are stored as `soft links` in the cache directory, which is not conducive to sharing. Therefore, this small tool was developed that analyzes the download address of the model on the Huggingface page, downloads all its files separately, and supports breakpoint resumption and retrying downloads to avoid wasting network bandwidth and time due to unexpected disconnections during model downloading.
+
 ## Usage
 
 ```sh
