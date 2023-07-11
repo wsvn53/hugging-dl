@@ -8,6 +8,16 @@ Downloading models from Huggingface can be frustrating. Git clone relies on `git
 
 ## Usage
 
+This tool required `jq` for parsing json data, so please install via:
+
+```sh
+# Ubuntu or Debian
+sudo apt install jq
+
+# For macOS
+brew install jq
+```
+
 ```sh
 ./hugging-dl.sh -h
 
