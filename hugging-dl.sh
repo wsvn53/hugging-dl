@@ -11,11 +11,18 @@
 	exit 0;
 }
 
+# Required jq
+which jq || {
+	echo "🚫 No 'jq' command found, please install jq first!";
+	exit 1002;
+}
+
 # Auto download HuggineFace files with curl
-hugging_prefix="https://huggingface.co";
+hugging_api_prefix="huggingface.co/api/models";
+hugging_api_suffix="tree/main";
 
 hugging_url=$1;
-[[ -z "$hugging_url" ]] && echo "";
+[[ -z "$hugging_url" ]] && echo "🚫 No huggingface model url specificed!" && exit 1000;
 
 output_dir=$2;
 [[ -z "$output_dir" ]] && output_dir=$(basename $hugging_url);
@@ -23,25 +30,33 @@ output_dir=$2;
 [[ -d "$output_dir" ]] || mkdir -pv "$output_dir";
 cd "$output_dir";
 
-[[ "$hugging_url" == https://* ]] || {
-	hugging_url="$hugging_prefix/$hugging_url";
+hugging_path="$hugging_url";
+[[ "$hugging_url" == https://* ]] && {
+	hugging_path="$(echo "$hugging_url" | sed "s#https://huggingface.co/##g")";
+	hugging_url="$(echo "$hugging_url" | sed "s#huggingface.co#$hugging_api_prefix#g")/$hugging_api_suffix";
 }
 
-echo "🍺 Starting download $hugging_url to $output_dir";
+[[ "$hugging_url" != https://* ]] && {
+	hugging_url="https://$hugging_api_prefix/$hugging_url/$hugging_api_suffix";
+}
+echo "ℹ️ Huggingface API URL: [$hugging_url]";
+echo "ℹ️ Huggingface Model Path: [$hugging_path]";
 
-curl -s "$hugging_url/tree/main" | grep download= | awk -F'href=' '{print $2}' | cut -d'"' -f2 | while read url; do
-	echo "🌎 Found URL: $hugging_prefix$url";
-	max_retry=10;
+curl "$hugging_url" | jq '.[].path' --raw-output | while read filename; do
+	echo "⬇️ Downloading [$filename] ..";
+	down_url="https://huggingface.co/$hugging_path/resolve/main/$filename";
+	echo "- URL: $down_url";
+	max_retry=20;
 	ret_code=1;
 	while [[ $ret_code != 0 ]]; do 
 		set -x;
-		curl -C - -L -O "$hugging_prefix$url"; 
+		curl -C - -L -O "$down_url"; 
 		ret_code=$?;
 		set +x;
-		[[ $ret_code == 0 ]] && echo "✅ Download Completed: $(basename $url)" && break;
+		[[ $ret_code == 0 ]] && echo "✅ Download Completed [$filename]" && break;
 
 		max_retry=$((max_retry-1));
-		[[ $max_retry == 0 ]] && echo "🚫 Download still FAILED: $url" && break;
+		[[ $max_retry == 0 ]] && echo "🚫 Download still FAILED: $down_url" && break;
 		echo "⚠️ Download failed. Retrying with continuous download(retry $max_retry remains)."
 	done
 done
