@@ -21,7 +21,7 @@ hugging_url=$1;
 [[ -z "$hugging_url" ]] && echo "🚫 No huggingface model url specificed!" && exit 1000;
 [[ "$hugging_url" != http* ]] && hugging_url="https://huggingface.co/$hugging_url";
 
-hugging_host="$(echo "$hugging_url" | cut -d/ -f1 -f2 -f3)";
+hugging_host="$(echo "$hugging_url" | cut -d/ -f1)/$(echo "$hugging_url" | cut -d/ -f2)/$(echo "$hugging_url" | cut -d/ -f3)";
 echo "ℹ️ Huggingface host: $hugging_host";
 
 # Auto download HuggineFace files with curl
