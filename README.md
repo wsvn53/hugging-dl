@@ -36,7 +36,7 @@ Example:
 For more information, please visit: https://github.com/wsvn53/hugging-dl
 ```
 
-Examples:
+## Examples:
 
 ```sh
 hugging-dl.sh gpt2

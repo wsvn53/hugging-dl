@@ -90,10 +90,11 @@ parse_json_value() {
     # Using jq to parse json if installed
     which jq>/dev/null && echo "$json_data" | jq ".$key" --raw-output --compact-output 2>/dev/null && return 0;
     # Alternatively, use python3 to parse path
-    python -c "import json; import sys; data=json.loads('$json_data'); print(data['$key']) if '$key' != '[]' else [print(item) for item in data]"  2>/dev/null;
+    python3 -c "import json; import sys; data=json.loads(sys.argv[1]); print(data['$key']) if '$key' != '[]' else [print(json.dumps(item)) for item in data]" "$json_data" 2>/dev/null;
     # shellcheck disable=SC2181
     [[ $? != 0 ]] && printf "[ERROR] Load model files FAILED, please check the JSON data:\n%s\n" "$json_data" 1>&2 && \
         printf "\n[Note] If you are downloading a private model, you may need to set an access token for downloading which can be created from [https://huggingface.co/settings/tokens].\n" 1>&2;
+    return 0;
 }
 
 # Function to download file
